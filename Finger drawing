@@ -1,0 +1,54 @@
+extends CanvasLayer
+
+var drawing = false
+var path = PackedVector2Array()
+
+func _ready():
+    set_process_input(true)
+
+func _input(event):
+    if event is InputEventMouseButton:
+        handle_mouse_button(event)
+    elif event is InputEventScreenTouch:
+        handle_touch(event)
+    elif event is InputEventMouseMotion:
+        handle_mouse_motion(event)
+
+func handle_mouse_button(event):
+    if event.button_index == MOUSE_BUTTON_LEFT:
+        drawing = event.pressed
+        if drawing:
+            path.clear()
+            path.append(event.position)
+        else:
+            # Finish drawing
+            path.append(event.position)
+            draw_path()
+
+func handle_touch(event):
+    if event.pressed:
+        drawing = true
+        path.clear()
+        path.append(event.position)
+    else:
+        drawing = false
+        path.append(event.position)
+        draw_path()
+
+func handle_mouse_motion(event):
+    if drawing:
+        path.append(event.position)
+        draw_path()
+
+func draw_path():
+    # Remove any existing Line2D nodes
+    while get_child_count() > 0:
+        var child = get_child(0)
+        if child is Line2D:
+            remove_child(child)
+
+    var line = Line2D.new()
+    line.width = 5
+    line.points = path
+    add_child(line)
+
